@@ -1,2 +1,93 @@
-print("hello world")
-print ("madan gowda patil")
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Setting up display
+width = 400
+height = 600
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption('Chick Game')
+
+# Colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+green = (0, 255, 0)
+red = (255, 0, 0)
+
+# Chick settings
+chick_width = 50
+chick_height = 50
+chick_x = 50
+chick_y = height // 2
+chick_y_change = 0
+
+# Obstacles settings
+obstacle_width = 70
+obstacle_height = random.randint(150, 400)
+obstacle_x = width
+obstacle_speed = 5
+
+# Score
+score = 0
+font = pygame.font.Font(None, 36)
+
+# Game over flag
+game_over = False
+
+# Clock
+clock = pygame.time.Clock()
+
+# Jump function
+def jump():
+    global chick_y, chick_y_change
+    chick_y_change = -10
+
+# Main loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                jump()
+
+    # Gravity
+    chick_y_change += 0.5
+    chick_y += chick_y_change
+
+    # Move obstacles
+    obstacle_x -= obstacle_speed
+    if obstacle_x < 0:
+        obstacle_x = width
+        obstacle_height = random.randint(150, 400)
+        score += 1
+
+    # Check collisions
+    if chick_y > height or chick_y < 0 or (obstacle_x < chick_x + chick_width < obstacle_x + obstacle_width and (chick_y < obstacle_height or chick_y + chick_height > obstacle_height + 150)):
+        game_over = True
+
+    # Drawing
+    screen.fill(white)
+    pygame.draw.rect(screen, green, (chick_x, chick_y, chick_width, chick_height))
+    pygame.draw.rect(screen, red, (obstacle_x, 0, obstacle_width, obstacle_height))
+    pygame.draw.rect(screen, red, (obstacle_x, obstacle_height + 150, obstacle_width, height - obstacle_height - 150))
+
+    # Display score
+    score_text = font.render('Score: ' + str(score), True, black)
+    screen.blit(score_text, (10, 10))
+
+    if game_over:
+        game_over_text = font.render('Game Over! Press R to Restart', True, black)
+        screen.blit(game_over_text, (50, height // 2))
+        pygame.display.update()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_r]:
+            chick_y = height // 2
+            score = 0
+            game_over = False
+
+    pygame.display.update()
+    clock.tick(30)
